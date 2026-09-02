@@ -1,0 +1,37 @@
+[importlinter]
+root_package = spotcheck
+include_external_packages = True
+
+[importlinter:contract:no-application-imports]
+name = SpotCheck must not import applications
+type = forbidden
+source_modules = spotcheck
+forbidden_modules =
+    freeweight
+    loadcoach
+    ideapress
+    promptcadence
+
+[importlinter:contract:no-sibling-packages]
+name = SpotCheck must not import sibling capability packages
+type = forbidden
+source_modules = spotcheck
+forbidden_modules =
+    modelrack
+    sweatmeter
+    weightsdb
+    mirrorwall
+    cutctx
+    toolyard
+    loadledger
+
+[importlinter:contract:no-sql-in-phase-1]
+# ADR-0050 §4: `sqlalchemy` is an optional extra so the pure-value core stays installable with
+# nothing but baseaicore and setspec. Until Phase 2 adds `spotcheck.sql`, no module here may
+# import it, and after Phase 2 this contract is replaced by one that exempts `spotcheck.sql` alone.
+name = SpotCheck must not import sqlalchemy before Phase 2
+type = forbidden
+source_modules = spotcheck
+forbidden_modules =
+    sqlalchemy
+    alembic
