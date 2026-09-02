@@ -1,11 +1,11 @@
-# SpotCheck — Development Plan
+# Commissioner — Development Plan
 
 **Sequence position:** PromptCadence arc, stream P ([roadmap §4](../../roadmap/promptcadence-roadmap.md)).
 Depends on `baseaicore>=0.4.1` (`DataClassification`) and `setspec>=0.5`
 (`governance.egress_decision` — SetSpec Phase 6 in the roadmap must land first).
-**Target:** `spotcheck 0.1.0` at the end of Phase 2.
+**Target:** `commissioner 0.1.0` at the end of Phase 2.
 
-The smallest package in the arc, on purpose: the skeleton's open question was whether SpotCheck
+The smallest package in the arc, on purpose: the skeleton's open question was whether Commissioner
 deserves to exist as a package at all, and the answer (D-10) holds only while it stays exactly
 this small — the shared shape, the shared comparison, the shared ledger, nothing else.
 
@@ -28,7 +28,7 @@ goldens; the D-2 (`DataClassification`) and D-10 ADRs accepted.
 
 **Files/subsystems**
 ```text
-src/spotcheck/{__init__,__about__,types,policy,errors}.py
+src/commissioner/{__init__,__about__,types,policy,errors}.py
 tests/unit/{test_policy_matrix,test_decision,test_payload_roundtrip}.py
 ```
 
@@ -64,11 +64,11 @@ round-trip.
   queries.
 * `sql.py`: `mount_egress_tables(metadata, prefix)` — same rules as `loadledger.sql` (plain
   types, no engine, host-owned migrations); append-only surface (no update/delete API).
-* The `[sql]` extra; README; publish `spotcheck 0.1.0`.
+* The `[sql]` extra; README; publish `commissioner 0.1.0`.
 
 **Files/subsystems**
 ```text
-src/spotcheck/{ledger,sql}.py
+src/commissioner/{ledger,sql}.py
 tests/integration/{test_sql_ledger,test_mounting}.py     # both dialects; miniature host reused
 ```
 
@@ -80,7 +80,7 @@ tests/integration/{test_sql_ledger,test_mounting}.py     # both dialects; miniat
 
 **Acceptance criteria**
 1. Spec §20 criteria met, including the `setspec`-only reader script (criterion 2).
-2. `spotcheck 0.1.0` published; `pip install spotcheck[sql]` resolves standalone.
+2. `commissioner 0.1.0` published; `pip install commissioner[sql]` resolves standalone.
 
 **Known risks:** duplicated mounting machinery drifting from LoadLedger's. Accepted for v1 (two
 small copies beat a premature shared base); the roadmap's revisit trigger names a third mountable

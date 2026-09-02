@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "spotcheck"
+name = "commissioner"
 description = "Egress behaviour turned into an egress record: the payload, the ordered classification comparison, and (Phase 2) an append-only ledger. No enforcement, no application policy."
 readme = "README.md"
 license = "Apache-2.0"
@@ -29,7 +29,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# No `sql` extra yet. `spotcheck.ledger`/`spotcheck.sql` and the SqlEgressLedger arrive in Phase 2
+# No `sql` extra yet. `commissioner.ledger`/`commissioner.sql` and the SqlEgressLedger arrive in Phase 2
 # (development plan) — declaring the extra ahead of the module would advertise an import that does
 # not exist.
 dev = [
@@ -45,15 +45,15 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/JPKell/SpotCheck"
-Documentation = "https://github.com/JPKell/SpotCheck/tree/main/docs"
-Changelog = "https://github.com/JPKell/SpotCheck/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/JPKell/Commissioner"
+Documentation = "https://github.com/JPKell/Commissioner/tree/main/docs"
+Changelog = "https://github.com/JPKell/Commissioner/blob/main/CHANGELOG.md"
 
 [tool.hatch.version]
-path = "src/spotcheck/__about__.py"
+path = "src/commissioner/__about__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/spotcheck"]
+packages = ["src/commissioner"]
 
 [tool.ruff]
 line-length = 100
@@ -88,11 +88,11 @@ testpaths = ["tests"]
 # The importable name, not the source path: CI installs the built distribution rather than an
 # editable checkout (Packaging Standards §4), so coverage must find the package wherever it is
 # installed. `paths` folds the two locations into one name in the report.
-source = ["spotcheck"]
+source = ["commissioner"]
 branch = true
 
 [tool.coverage.paths]
-source = ["src/spotcheck", "*/site-packages/spotcheck"]
+source = ["src/commissioner", "*/site-packages/commissioner"]
 
 [tool.coverage.report]
 # Shared packages carry a 95% floor, not the 85% applications use.

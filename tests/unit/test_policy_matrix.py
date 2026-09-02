@@ -20,8 +20,7 @@ import random
 import pytest
 from baseaicore import DataClassification
 
-from conftest import MIDDAY, ManualClock
-from spotcheck import (
+from commissioner import (
     EgressDecision,
     EgressPolicy,
     EgressRequest,
@@ -29,6 +28,7 @@ from spotcheck import (
     OrderedClassificationPolicy,
     Verdict,
 )
+from conftest import MIDDAY, ManualClock
 
 _ORDER = (DataClassification.PUBLIC, DataClassification.INTERNAL, DataClassification.CONFIDENTIAL)
 """ADR-0046's ordering, restated independently of `DataClassification.__le__`."""

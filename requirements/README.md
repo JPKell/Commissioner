@@ -11,14 +11,14 @@ Security Standards §11.
 
 ## What these are not
 
-They do **not** define what a consumer installs. `pip install spotcheck` resolves the compatible
+They do **not** define what a consumer installs. `pip install commissioner` resolves the compatible
 ranges in `pyproject.toml`; a library that shipped pinned runtime dependencies would be
 un-coinstallable with the rest of the suite. These files exist so that a green build stays green:
 without them every CI run re-resolves, and a new `ruff` or `mypy` release can change the result
 with no commit to explain it — and `pip-audit` would be auditing today's resolution rather than
 what the build actually used.
 
-`ci.lock` is short by suite standards: `spotcheck`'s only runtime dependencies are `baseaicore`
+`ci.lock` is short by suite standards: `commissioner`'s only runtime dependencies are `baseaicore`
 (whose own dependency count is zero) and `setspec` (gold standards §2). Everything else in the
 file is the development toolchain.
 
@@ -47,6 +47,6 @@ would defeat the purpose of an early warning.
 
 CI installs the built distribution (`pip install . --no-deps`), not an editable checkout, so
 `[tool.coverage.run] source` in `pyproject.toml` names the **importable package** rather than
-`src/spotcheck`. A path-based source reports 0 % against a non-editable install — the tests all
+`src/commissioner`. A path-based source reports 0 % against a non-editable install — the tests all
 pass, nothing is measured, and the coverage gate fails with a number that looks like a catastrophe
 instead of a configuration error.

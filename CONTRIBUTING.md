@@ -1,7 +1,7 @@
-# Contributing to SpotCheck
+# Contributing to Commissioner
 
 This repository is one component of the Local AI Suite. Before changing anything, read
-`docs/packages/spotcheck/spec.md` and the current
+`docs/packages/commissioner/spec.md` and the current
 phase in `development-plan.md` — both are in this repository's `docs/` folder, copied from the suite's
 central documentation set so this repository can be worked on independently.
 
@@ -18,7 +18,7 @@ pre-commit install
 
 1. This component's spec — purpose, scope, non-goals, contracts.
 2. `development-plan.md` in the same folder — the phase you are implementing, its acceptance criteria and its tests.
-3. [ADR-0054](docs/packages/spotcheck/../../adr/0054-spotcheck-records-egress-it-does-not-enforce-it.md) — the boundary that keeps this package small: the payload, the ordered comparison, and an append-only ledger, nothing else.
+3. [ADR-0054](docs/packages/commissioner/../../adr/0054-commissioner-records-egress-it-does-not-enforce-it.md) — the boundary that keeps this package small: the payload, the ordered comparison, and an append-only ledger, nothing else.
 
 ## Rules that apply to every change here
 

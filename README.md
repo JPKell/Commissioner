@@ -1,14 +1,14 @@
-# SpotCheck
+# Commissioner
 
 Turn the suite's egress *behaviour* into an egress *record*. Given a request — "may data of this
-classification go to this target?" — SpotCheck answers deterministically and fail-closed, and
+classification go to this target?" — Commissioner answers deterministically and fail-closed, and
 every verdict, approved or denied alike, is representable as SetSpec's
-`governance.egress_decision` 1.0 so a reader can validate one with SpotCheck not installed.
+`governance.egress_decision` 1.0 so a reader can validate one with Commissioner not installed.
 
 **Status:** **Phase 1 complete, unreleased.** The pure core is implemented and tested — the value
-objects, the shipped policy, and the payload round trip. `spotcheck.ledger`, `spotcheck.sql` and
-the `spotcheck[sql]` extra arrive in Phase 2, which is also when `0.1.0` publishes; see
-[docs/packages/spotcheck/development-plan.md](docs/packages/spotcheck/development-plan.md).
+objects, the shipped policy, and the payload round trip. `commissioner.ledger`, `commissioner.sql` and
+the `commissioner[sql]` extra arrive in Phase 2, which is also when `0.1.0` publishes; see
+[docs/packages/commissioner/development-plan.md](docs/packages/commissioner/development-plan.md).
 
 Part of the **Local AI Suite**.
 
@@ -27,7 +27,7 @@ pip install -e .
   classification at or under the ceiling (approved), or a classification over it (denied). It
   uses `baseaicore.DataClassification`'s own ordering and defines no ranking of its own.
 * **It never enforces.** `evaluate` never raises for a deny — a deny is data, recorded exactly the
-  way an approval is. SpotCheck makes no HTTP request and halts no caller; acting on a verdict is
+  way an approval is. Commissioner makes no HTTP request and halts no caller; acting on a verdict is
   the caller's job.
 * **It never guesses.** A remote target with no declared ceiling is denied, never assumed public.
   The absent value is the reason to refuse.
@@ -43,7 +43,7 @@ pip install -e .
 from datetime import UTC, datetime
 
 from baseaicore import DataClassification
-from spotcheck import EgressRequest, EgressTarget, OrderedClassificationPolicy
+from commissioner import EgressRequest, EgressTarget, OrderedClassificationPolicy
 
 policy = OrderedClassificationPolicy(clock=lambda: datetime.now(UTC))
 
@@ -71,8 +71,8 @@ Project documentation lives under [`docs/`](docs/README.md).
 
 | Read this | For |
 |---|---|
-| [docs/packages/spotcheck/spec.md](docs/packages/spotcheck/spec.md) | Purpose, scope, non-goals, public contracts, acceptance criteria |
-| [docs/packages/spotcheck/development-plan.md](docs/packages/spotcheck/development-plan.md) | The phased build plan: goals, work, tests, acceptance criteria per phase |
+| [docs/packages/commissioner/spec.md](docs/packages/commissioner/spec.md) | Purpose, scope, non-goals, public contracts, acceptance criteria |
+| [docs/packages/commissioner/development-plan.md](docs/packages/commissioner/development-plan.md) | The phased build plan: goals, work, tests, acceptance criteria per phase |
 
 ## Development
 

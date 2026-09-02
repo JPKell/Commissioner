@@ -12,14 +12,14 @@ from datetime import datetime
 import pytest
 from baseaicore import DataClassification
 
-from conftest import MIDDAY, ManualClock
-from spotcheck import (
+from commissioner import (
     EgressDecision,
     EgressRequest,
     EgressTarget,
     OrderedClassificationPolicy,
     Verdict,
 )
+from conftest import MIDDAY, ManualClock
 
 _NAIVE = datetime(2026, 9, 2, 12, 0, 0)  # noqa: DTZ001 — deliberately naive, for a refusal test
 

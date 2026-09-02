@@ -14,7 +14,7 @@ from setspec import SchemaVersion, canonical_dumps
 from setspec.artifacts import golden_names, golden_payloads
 from setspec.governance.v1 import GovernanceEgressDecisionIn, GovernanceEgressDecisionOut
 
-from spotcheck import EgressDecision
+from commissioner import EgressDecision
 
 _SCHEMA = "governance.egress_decision"
 _VERSION = SchemaVersion(1, 0)

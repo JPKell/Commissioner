@@ -1,6 +1,6 @@
-# SpotCheck — Specification
+# Commissioner — Specification
 
-**Type:** Python package · **Import/distribution name:** `spotcheck` · **Layer:** 3 (capability package)
+**Type:** Python package · **Import/distribution name:** `commissioner` · **Layer:** 3 (capability package)
 **Status:** Specified, not implemented. Part of the PromptCadence arc
 ([roadmap](../../roadmap/promptcadence-roadmap.md)); decision record D-10 resolves the skeleton's open
 question — a package **and** a SetSpec payload: the decision *shape* is the cross-application
@@ -15,7 +15,7 @@ Turn the suite's egress *behaviour* into an egress *record*. The behaviour exist
 `allow_remote` opt-in, IdeaPress's per-stage egress badge (risk S4:
 "private content leaving the machine via a remote backend",
 [Risks](../../apps/ideapress/risks.md)) — but no durable, queryable record of each decision does.
-SpotCheck evaluates "may data of this classification go to this target?" against an ordered
+Commissioner evaluates "may data of this classification go to this target?" against an ordered
 lattice, and persists every verdict — approved or denied — as a versioned payload, so "what left
 this machine, when, and under whose policy?" has an answer that outlives the process.
 
@@ -26,16 +26,16 @@ this machine, when, and under whose policy?" has an answer that outlives the pro
 * The `EgressPolicy` protocol and the shipped `OrderedClassificationPolicy` (classification ≤
   target ceiling, with explicit deny reasons).
 * The `EgressLedger` protocol, `InMemoryEgressLedger`, and `SqlEgressLedger` over mountable models
-  (`spotcheck.sql`, same pattern as LoadLedger — roadmap §2, D-6).
+  (`commissioner.sql`, same pattern as LoadLedger — roadmap §2, D-6).
 * Query surface: by run, by verdict, by target, by time window.
 
 ## 3. Explicit non-goals
 
-* **No enforcement.** SpotCheck renders and records verdicts; *acting* on a deny — refusing the
+* **No enforcement.** Commissioner renders and records verdicts; *acting* on a deny — refusing the
   call, halting the trajectory, painting the badge — is the application's job. A package cannot
   intercept an HTTP call it does not make.
 * **No network inspection.** The evaluated facts are what the caller declares (classification,
-  target); SpotCheck is a policy-and-ledger, not a proxy or a firewall.
+  target); Commissioner is a policy-and-ledger, not a proxy or a firewall.
 * No application-specific policy: what counts as `internal` in a given deployment, which tiers
   exist, when a human must confirm — all caller-side. The shipped policy is exactly the ordered
   comparison and nothing more.
@@ -48,14 +48,14 @@ this machine, when, and under whose policy?" has an answer that outlives the pro
 | Vocabulary | Use `baseaicore.DataClassification` (ordered: `PUBLIC < INTERNAL < CONFIDENTIAL`); never define a parallel taxonomy |
 | Evaluation | `evaluate(request) -> EgressDecision`, deterministic, with a machine-readable reason on every deny |
 | Record | Persist every decision — approved and denied alike — with policy name/version and timestamps |
-| Contract | Serialize decisions as SetSpec `governance.egress_decision` 1.0 so IdeaPress's badge (or any tool) reads them without SpotCheck installed |
+| Contract | Serialize decisions as SetSpec `governance.egress_decision` 1.0 so IdeaPress's badge (or any tool) reads them without Commissioner installed |
 | Query | Filterable history for UIs, explanations and audits |
 
 ## 5. Dependencies
 
 `baseaicore`, `setspec>=0.5,<0.6` (the payload — a cross-application shape, which is the one
-justified reason a capability package imports SetSpec). `spotcheck.sql` additionally imports
-`sqlalchemy>=2,<3` (extra: `spotcheck[sql]`).
+justified reason a capability package imports SetSpec). `commissioner.sql` additionally imports
+`sqlalchemy>=2,<3` (extra: `commissioner[sql]`).
 
 ## 6. Consumers
 
@@ -120,7 +120,7 @@ SqlEgressLedger(session_factory, *, table_prefix: str = "egress_")
 def mount_egress_tables(metadata: MetaData, *, prefix: str = "egress_") -> EgressTables: ...
 
 # Errors (subclass baseaicore.SuiteError)
-SpotCheckError            SPOTCHECK_ERROR
+CommissionerError            COMMISSIONER_ERROR
 └── StoreFailure          EGRESS_STORE_FAILURE
 ```
 
@@ -152,7 +152,7 @@ None of its own; mountable models, application-owned tables, exactly as
    it is here, and it is never confused with `decided_at`, which is the record's own timestamp and
    is required.
 5. **No parallel vocabulary**: the classification type is `baseaicore.DataClassification`;
-   SpotCheck adds no levels and no aliases.
+   Commissioner adds no levels and no aliases.
 6. The `VIOLATION` verdict is only ever written by a caller's verification step — the shipped
    policy never produces it, and the ledger accepts it, because an after-the-fact violation is a
    governance fact the record must be able to hold.
@@ -172,7 +172,7 @@ Constructor arguments only.
 ## 14. Security considerations
 
 Decisions carry classifications, target names and references — never content. The ledger is the
-audit surface for the suite's most sensitive question, so `spotcheck.sql` rows are append-only by
+audit surface for the suite's most sensitive question, so `commissioner.sql` rows are append-only by
 convention and the package exposes no update or delete.
 
 ## 15. Performance
@@ -217,7 +217,7 @@ accepted, unknown major rejected); policy `version` strings are part of every re
 1. PromptCadence's acceptance criterion 4 (a confidential trajectory can never reach a remote tier, and
    the refusal is queryable) runs through this package end to end.
 2. A `setspec`-only script reads a decision exported by PromptCadence and prints its verdict — no
-   SpotCheck installed (the payload is the contract).
+   Commissioner installed (the payload is the contract).
 3. `mypy --strict`, `ruff`, `lint-imports` clean; coverage ≥ 95 %.
 
 ## 21. Future extensions

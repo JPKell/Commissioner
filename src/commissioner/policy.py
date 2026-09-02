@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from baseaicore import UlidGenerator
 
-from spotcheck.types import EgressDecision, EgressRequest, Verdict
+from commissioner.types import EgressDecision, EgressRequest, Verdict
 
 if TYPE_CHECKING:
     from baseaicore import Clock, RandomnessSource
@@ -34,7 +34,7 @@ __all__ = ["EgressPolicy", "OrderedClassificationPolicy"]
 
 @runtime_checkable
 class EgressPolicy(Protocol):
-    """What every SpotCheck policy offers (spec §7).
+    """What every Commissioner policy offers (spec §7).
 
     :class:`OrderedClassificationPolicy` implements it now. A caller may supply a different,
     legitimate implementation — per-provider ceilings, time-boxed approvals — and this package
@@ -89,7 +89,7 @@ class OrderedClassificationPolicy:
         """Decide one request against its target's declared ceiling.
 
         Args:
-            request: What to evaluate — already a valid :class:`~spotcheck.types.EgressRequest`.
+            request: What to evaluate — already a valid :class:`~commissioner.types.EgressRequest`.
 
         Returns:
             The decision, with a freshly drawn id and the current instant from the injected

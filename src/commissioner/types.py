@@ -64,7 +64,7 @@ class EgressTarget:
         remote: Whether this target leaves the local machine.
         max_data_classification: The declared ceiling, or ``None`` when the target declares none.
             **Legitimately absent on a remote target**: that is the fail-closed case
-            :class:`~spotcheck.policy.OrderedClassificationPolicy` must be able to deny
+            :class:`~commissioner.policy.OrderedClassificationPolicy` must be able to deny
             (ADR-0054 rule 3), not a value this type refuses to hold.
         provider_kind: The provider kind serving this target, when known.
 
