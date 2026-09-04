@@ -25,13 +25,18 @@ forbidden_modules =
     toolyard
     loadledger
 
-[importlinter:contract:no-sql-in-phase-1]
+[importlinter:contract:only-the-sql-module-imports-sqlalchemy]
 # ADR-0050 §4: `sqlalchemy` is an optional extra so the pure-value core stays installable with
-# nothing but baseaicore and setspec. Until Phase 2 adds `commissioner.sql`, no module here may
-# import it, and after Phase 2 this contract is replaced by one that exempts `commissioner.sql` alone.
-name = Commissioner must not import sqlalchemy before Phase 2
+# nothing but baseaicore and setspec. `alembic` has no exemption at all — the host owns every
+# migration (ADR-0050 decision 5), so nothing in this package imports it, `commissioner.sql`
+# included; it is a `[dev]` dependency for the miniature host only. With
+# `include_external_packages = True`, import-linter collapses every external import to the
+# top-level package, so `commissioner.sql -> sqlalchemy.**` would match nothing and is not written.
+name = Only commissioner.sql may import SQLAlchemy, and nothing may import Alembic
 type = forbidden
 source_modules = commissioner
 forbidden_modules =
     sqlalchemy
     alembic
+ignore_imports =
+    commissioner.sql -> sqlalchemy
