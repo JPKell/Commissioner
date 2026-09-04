@@ -7,6 +7,8 @@ packaging and release standards §3.
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-09-03
+
 ### Added
 - Repository scaffold: toolchain copied from `py/LoadLedger` (hatchling, ruff, mypy strict,
   import-linter, pytest with `pytest-randomly`, hash-pinned `requirements/` locks, CI and release
