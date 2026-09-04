@@ -114,6 +114,10 @@ class EgressLedger(Protocol):
     def decisions(self, *, run_id: str | None = None, verdict: Verdict | None = None,
                   target: str | None = None, since: datetime | None = None
                   ) -> Sequence[EgressDecision]: ...
+    # Ordered by (decided_at, decision_id) ascending, in every implementation. `decision_id` is
+    # minted by the policy before the ledger sees the decision, so it is not an insertion-order
+    # key and nothing may order by it alone. `since` is inclusive and must be timezone-aware;
+    # a naive bound raises ValueError rather than being assumed to be UTC.
 
 InMemoryEgressLedger()
 SqlEgressLedger(session_factory, *, table_prefix: str = "egress_")
@@ -121,7 +125,10 @@ def mount_egress_tables(metadata: MetaData, *, prefix: str = "egress_") -> Egres
 
 # Errors (subclass baseaicore.SuiteError)
 CommissionerError            COMMISSIONER_ERROR
-└── StoreFailure          EGRESS_STORE_FAILURE
+├── StoreFailure             EGRESS_STORE_FAILURE
+└── UnsupportedDialect       EGRESS_UNSUPPORTED_DIALECT
+    # a session bound to anything but SQLite or PostgreSQL; raised from commissioner.sql only,
+    # never from the in-memory ledger, which has no database to be bound to (ADR-0006)
 ```
 
 ## 8. Inputs
@@ -135,7 +142,25 @@ Egress requests built by the caller from its own facts; policy configuration; an
 ## 10. Data ownership
 
 None of its own; mountable models, application-owned tables, exactly as
-[LoadLedger §10](../loadledger/spec.md).
+[LoadLedger §10](../loadledger/spec.md). `commissioner.sql` defines the table shape; the
+**application** owns the database, the rows and the retention. The `InMemoryEgressLedger` never
+survives the process and says so.
+
+`mount_egress_tables` adds **one** table under the host's chosen prefix (`egress_` by default),
+and the table, both indexes and the primary-key constraint all carry it:
+
+| Table | Key | Holds |
+|---|---|---|
+| `{prefix}decisions` | `decision_id` | `decision_json` — the decision's own `governance.egress_decision` payload in canonical form, which is the whole record and the only reconstruction source — plus `run_id`, `verdict`, `target_name` and `decided_at` projected out as indexed, filterable columns |
+
+One table rather than LoadLedger's four because there is nothing to accumulate: no balance, no
+running total, no window. Every row is independent, so a write is a single `INSERT` and there is no
+column whose value grows with history (and therefore no `BigInteger` width question to get wrong).
+`verdict` is stored as plain text, never `sa.Enum`, which would create a native `ENUM` type on
+PostgreSQL and a `CHECK` constraint on SQLite — one package producing two schemas.
+
+Indexes: `ix_{prefix}decisions_run (run_id, decided_at)` serves the per-run audit view, and
+`ix_{prefix}decisions_decided_at` serves a `since` sweep across all runs.
 
 ## 11. Public contracts
 
@@ -167,20 +192,37 @@ Constructor arguments only.
 |---|---|
 | Remote target without a ceiling | A `DENIED` decision — data, not an exception |
 | Store write failure | `StoreFailure`; the caller decides whether to proceed unrecorded (PromptCadence does not — an unrecordable decision halts the turn) |
+| A `decision_id` already recorded | `StoreFailure`, never an "insert or ignore". Two decisions cannot legitimately share an identity, so a collision is a caller bug — and a conflict path that quietly absorbs one is indistinguishable from the update §14 forbids. A caller replaying an export reads first |
+| A session bound to a third dialect | `UnsupportedDialect`, checked before the write. ADR-0006 admits SQLite and PostgreSQL and nothing else; working by accident on a third dialect would be half-supporting it |
 | Malformed payload on `from_payload` | SetSpec's `ValidationError`, propagated |
 
 ## 14. Security considerations
 
 Decisions carry classifications, target names and references — never content. The ledger is the
-audit surface for the suite's most sensitive question, so `commissioner.sql` rows are append-only by
-convention and the package exposes no update or delete.
+audit surface for the suite's most sensitive question, so `commissioner.sql` rows are append-only
+and the package exposes no update or delete. This is a **surface property, asserted structurally**
+rather than a convention to be remembered: a test walks the public API of the protocol and both
+implementations and fails if a public name beyond `record`/`decisions`/`tables` appears, and walks
+the AST of both modules and fails on an `update` or `delete` identifier. The named failure mode it
+exists to catch is a query path, added for a UI, that quietly becomes an update path.
 
 ## 15. Performance
 
 | Measure | Target |
 |---|---|
 | `record` (`SqlEgressLedger`, SQLite) | ≤ 5 ms |
-| `decisions` over 100 000 rows, filtered | ≤ 200 ms |
+| `decisions` over a 100 000-row table, filtered to one run's history | ≤ 200 ms |
+
+The second row's **selectivity is part of the target**, and was left implicit when this section was
+written. The figure covers the shape a caller actually asks for — a per-run audit view over a
+long-lived table — because the cost is dominated not by the indexed scan but by reconstructing each
+matched row through `from_payload`. A deliberately broad filter (every `DENIED` row across every
+run) returns a result set proportional to the whole table and is not what 200 ms was set against;
+a caller needing that should page it.
+
+`record` has no history-length term at all: it is one `INSERT` of one independent row, so its
+flatness is structural rather than a property to protect with a first-slice/last-slice test the way
+[LoadLedger §15](../loadledger/spec.md)'s `debit` needs one.
 
 `evaluate` carries no budget: it is a pure in-memory comparison sitting beside model calls
 measured in seconds, and a microsecond-scale target would be measurement fuss, not protection —
