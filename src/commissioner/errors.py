@@ -12,6 +12,10 @@ is data, recorded through the same path as an approval
 :class:`StoreFailure` names the code Phase 2's ledger will raise on a write failure (spec §13); it
 is declared now because it is part of the public API this phase publishes, even though nothing in
 Phase 1 constructs one — Phase 1 has no store.
+
+:class:`UnsupportedDialect` is Phase 2's other refusal: ADR-0006 admits SQLite and PostgreSQL and
+nothing else, so :mod:`commissioner.sql` refuses a third dialect at the first statement rather than
+discovering it as a syntax error partway through recording a decision.
 """
 
 from __future__ import annotations
@@ -20,7 +24,7 @@ from typing import ClassVar
 
 from baseaicore import SuiteError
 
-__all__ = ["CommissionerError", "StoreFailure"]
+__all__ = ["CommissionerError", "StoreFailure", "UnsupportedDialect"]
 
 
 class CommissionerError(SuiteError):
@@ -43,3 +47,18 @@ class StoreFailure(CommissionerError):
     """
 
     code: ClassVar[str] = "EGRESS_STORE_FAILURE"
+
+
+class UnsupportedDialect(CommissionerError):
+    """A session was bound to a database this package has no statements for.
+
+    The suite runs on exactly two dialects — SQLite and PostgreSQL, both first-class
+    (ADR-0006) — and :class:`~commissioner.sql.SqlEgressLedger` is written for both. A third
+    dialect is refused at the first statement rather than discovered as a syntax error partway
+    through recording a decision. ``details`` names the dialect that was bound.
+
+    Raised only from :mod:`commissioner.sql`; :mod:`commissioner.ledger`'s in-memory ledger never
+    sees a database.
+    """
+
+    code: ClassVar[str] = "EGRESS_UNSUPPORTED_DIALECT"
