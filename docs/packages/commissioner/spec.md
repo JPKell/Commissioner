@@ -53,9 +53,14 @@ this machine, when, and under whose policy?" has an answer that outlives the pro
 
 ## 5. Dependencies
 
-`baseaicore`, `setspec>=0.5,<0.6` (the payload — a cross-application shape, which is the one
-justified reason a capability package imports SetSpec). `commissioner.sql` additionally imports
-`sqlalchemy>=2,<3` (extra: `commissioner[sql]`).
+`baseaicore`, `setspec>=0.5,<0.7` (the payload — a cross-application shape, which is the one
+justified reason a capability package imports SetSpec). The ceiling widened from `<0.6` at row H4:
+`commissioner 0.1.0`'s cap held PromptCadence's resolved `setspec` at 0.5.x even though
+PromptCadence's own range admits 0.6 — the same shape as the `mirrorwall<0.5` cap row E5 removed,
+and harmless only while nothing in PromptCadence consumed a 0.6 payload. **Commissioner adopts no
+payload in widening it**: it owns the Python form of `governance.egress_decision` `1.0` and that is
+unchanged. The floor stays 0.5, which is where that payload ships.
+`commissioner.sql` additionally imports `sqlalchemy>=2,<3` (extra: `commissioner[sql]`).
 
 ## 6. Consumers
 

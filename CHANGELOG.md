@@ -7,6 +7,25 @@ packaging and release standards §3.
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-09-06
+
+### Changed
+- **`setspec` widened to `>=0.5,<0.7`**, and `requirements/ci.lock` recompiled. `0.1.0`'s `<0.6`
+  cap held PromptCadence's resolved `setspec` at 0.5.x even though PromptCadence's own range admits
+  0.6 — the same shape as the `mirrorwall<0.5` cap row E5 spent a row removing, and harmless only
+  for as long as nothing in PromptCadence consumed a 0.6 payload.
+  - **This package adopts no payload in widening it.** It owns the Python form of
+    `governance.egress_decision` `1.0` and that is unchanged: this is a range widen, a lock
+    recompile and a gate, exactly the shape MirrorWall's was.
+  - The floor stays `0.5`, which is the version `governance.egress_decision` ships in.
+  - Two pins move in the lock: `setspec` 0.5.0 → 0.6.0 and `baseaicore` 0.4.1 → 0.4.2 (0.6.0
+    requires it; without pinning it too the resolver silently falls back rather than failing — row
+    E5's finding).
+  - `docs/packages/commissioner/spec.md` §5 states the range deliberately and moved with it.
+  - Verified from the lock rather than from this repository's venv: a clean Python 3.13.15 venv
+    installed `--require-hashes` resolves `setspec 0.6.0` and `baseaicore 0.4.2` and runs the full
+    suite green (115 passed, 12 skipped), at 100 % coverage.
+
 ## [0.1.0] — 2026-09-03
 
 ### Added
