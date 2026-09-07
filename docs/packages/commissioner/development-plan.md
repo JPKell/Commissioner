@@ -4,6 +4,8 @@
 Depends on `baseaicore>=0.4.1` (`DataClassification`) and `setspec>=0.5`
 (`governance.egress_decision` — SetSpec Phase 6 in the roadmap must land first).
 **Target:** `commissioner 0.1.0` at the end of Phase 2.
+**Shipped:** `0.1.0` at row E3; **`0.1.1` is published** (the `setspec` ceiling widened at row
+H4, no behaviour change).
 
 The smallest package in the arc, on purpose: the skeleton's open question was whether Commissioner
 deserves to exist as a package at all, and the answer (D-10) holds only while it stays exactly

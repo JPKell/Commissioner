@@ -1,7 +1,7 @@
 # Commissioner — Specification
 
 **Type:** Python package · **Import/distribution name:** `commissioner` · **Layer:** 3 (capability package)
-**Status:** Specified, not implemented. Part of the PromptCadence arc
+**Status:** Implemented and published as `commissioner 0.1.1`. Part of the PromptCadence arc
 ([roadmap](../../roadmap/promptcadence-roadmap.md)); decision record D-10 resolves the skeleton's open
 question — a package **and** a SetSpec payload: the decision *shape* is the cross-application
 contract (`governance.egress_decision` v1), the evaluation and the ledger are the small shared
