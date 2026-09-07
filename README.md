@@ -5,7 +5,7 @@ classification go to this target?" — Commissioner answers deterministically an
 every verdict, approved or denied alike, is representable as SetSpec's
 `governance.egress_decision` 1.0 so a reader can validate one with Commissioner not installed.
 
-**Status:** **0.1.0.** The value objects, the shipped policy, the payload round trip,
+**Status:** **0.1.1.** The value objects, the shipped policy, the payload round trip,
 `InMemoryEgressLedger`, the mountable table and `SqlEgressLedger` on SQLite and PostgreSQL; see
 [docs/packages/commissioner/development-plan.md](docs/packages/commissioner/development-plan.md).
 
