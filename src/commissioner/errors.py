@@ -9,13 +9,13 @@ is data, recorded through the same path as an approval
 (:doc:`ADR-0054 <adr>` rule 4). A policy that raised on refusal would be the defect
 :doc:`ADR-0053 <adr>` rejects for tool calls, arriving here instead.
 
-:class:`StoreFailure` names the code Phase 2's ledger will raise on a write failure (spec §13); it
-is declared now because it is part of the public API this phase publishes, even though nothing in
-Phase 1 constructs one — Phase 1 has no store.
+:class:`StoreFailure` is what a ledger raises on a write failure (spec §13); only
+:class:`~commissioner.sql.SqlEgressLedger` constructs one — the in-memory ledger has no store to
+fail.
 
-:class:`UnsupportedDialect` is Phase 2's other refusal: ADR-0006 admits SQLite and PostgreSQL and
-nothing else, so :mod:`commissioner.sql` refuses a third dialect at the first statement rather than
-discovering it as a syntax error partway through recording a decision.
+:class:`UnsupportedDialect` is the other refusal :mod:`commissioner.sql` makes: ADR-0006 admits
+SQLite and PostgreSQL and nothing else, so a third dialect is refused at the first statement rather
+than discovered as a syntax error partway through recording a decision.
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ class CommissionerError(SuiteError):
 class StoreFailure(CommissionerError):
     """A ledger could not record a decision (spec §13).
 
-    Raised by ``EgressLedger.record`` implementations in Phase 2, never by
+    Raised by :meth:`~commissioner.sql.SqlEgressLedger.record`, never by
     :mod:`commissioner.policy`. An unrecordable governance decision is not a decision that may
     proceed — PromptCadence's error table halts the turn rather than continuing unrecorded — and
     that policy is the caller's, stated here only as the typed signal it acts on.

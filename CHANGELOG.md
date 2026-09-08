@@ -13,6 +13,15 @@ packaging and release standards §3.
   line equals `__about__.__version__`, so a release cannot leave the README stale (M9 re-audit,
   row L7).
 
+### Changed
+
+- `errors.py` describes the shipped package: `StoreFailure` and `UnsupportedDialect` are raised by
+  `commissioner.sql`, not by a future phase.
+- One package-internal `types.require_aware` replaces the four inline naive-datetime checks
+  (value objects and both ledgers' `since` filter); the message is now
+  `<owner>.<field> must be timezone-aware; got a naive datetime.` everywhere.
+- `mount_egress_tables` validates its prefix with one regex and one message. No behaviour change.
+
 ## [0.1.1] — 2026-09-06
 
 ### Changed

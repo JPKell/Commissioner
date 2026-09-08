@@ -18,6 +18,8 @@ from __future__ import annotations
 import threading
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
+from commissioner.types import require_aware
+
 __all__ = ["EgressLedger", "InMemoryEgressLedger"]
 
 if TYPE_CHECKING:
@@ -33,8 +35,8 @@ class EgressLedger(Protocol):
 
     :class:`InMemoryEgressLedger` and :class:`~commissioner.sql.SqlEgressLedger` both implement
     it. A caller written against this protocol never learns which one it holds, which is the
-    point: the in-memory ledger is the deterministic double later phases and other applications
-    test against, not a stub with a reduced surface.
+    point: the in-memory ledger is the deterministic double applications test against, not a stub
+    with a reduced surface.
     """
 
     def record(self, decision: EgressDecision) -> None:
@@ -128,10 +130,7 @@ class InMemoryEgressLedger:
             ValueError: If ``since`` is naive. Comparing a naive bound against stored aware
                 instants would silently shift the window by the reader's local offset.
         """
-        if since is not None and (since.tzinfo is None or since.tzinfo.utcoffset(since) is None):
-            raise ValueError(
-                "decisions(since=...) requires a timezone-aware instant; got a naive one."
-            )
+        require_aware(since, field="since", owner="decisions")
         with self._lock:
             snapshot = tuple(self._decisions)
         narrowed = (

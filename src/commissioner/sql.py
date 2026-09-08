@@ -41,6 +41,7 @@ omit. The stored ``decision_json`` is the whole decision, rendered through the s
 from __future__ import annotations
 
 import json
+import re
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC
@@ -52,7 +53,7 @@ from setspec.governance.v1 import GovernanceEgressDecisionIn
 from sqlalchemy.exc import SQLAlchemyError
 
 from commissioner.errors import StoreFailure, UnsupportedDialect
-from commissioner.types import EgressDecision, Verdict
+from commissioner.types import EgressDecision, Verdict, require_aware
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -62,6 +63,8 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
 __all__ = ["EgressTables", "SqlEgressLedger", "mount_egress_tables"]
+
+_IDENTIFIER_PREFIX = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 DEFAULT_TABLE_PREFIX = "egress_"
 """The documented default prefix, part of the mounted contract (ADR-0050 consequences).
@@ -185,18 +188,11 @@ def mount_egress_tables(metadata: MetaData, *, prefix: str = DEFAULT_TABLE_PREFI
             ``metadata`` — mounting the same prefix twice, usually because a host's model module
             was imported under two names. Mount once, at import.
     """
-    if not prefix or not prefix[0].isascii() or not (prefix[0].isalpha() or prefix[0] == "_"):
+    if not _IDENTIFIER_PREFIX.fullmatch(prefix):
         raise ValueError(
-            f"mount_egress_tables(prefix=...) must be a non-empty SQL identifier prefix "
-            f"beginning with a letter or underscore; got {prefix!r}. An empty prefix would mount "
-            f"a table named 'decisions' into the application's schema."
-        )
-    if not all(
-        character.isascii() and (character.isalnum() or character == "_") for character in prefix
-    ):
-        raise ValueError(
-            f"mount_egress_tables(prefix=...) must contain only ASCII letters, digits and "
-            f"underscores; got {prefix!r}."
+            "mount_egress_tables(prefix=...) must be a non-empty SQL identifier prefix — ASCII "
+            f"letters, digits and underscores, not starting with a digit; got {prefix!r}. An "
+            "empty prefix would mount a table named 'decisions' into the application's schema."
         )
 
     decisions = sa.Table(
@@ -351,10 +347,7 @@ class SqlEgressLedger:
             ValueError: If ``since`` is naive. Comparing a naive bound against stored UTC instants
                 would silently shift the window by the reader's local offset.
         """
-        if since is not None and (since.tzinfo is None or since.tzinfo.utcoffset(since) is None):
-            raise ValueError(
-                "decisions(since=...) requires a timezone-aware instant; got a naive one."
-            )
+        require_aware(since, field="since", owner="decisions")
         table = self._tables.decisions
         query = sa.select(table).order_by(table.c.decided_at.asc(), table.c.decision_id.asc())
         if run_id is not None:
@@ -481,6 +474,4 @@ def _from_utc(when: datetime) -> datetime:
     dialects. Used only where a test reads ``decided_at`` straight from a row — the ledger's own
     reconstruction in :func:`_decision_from_row` never touches the column at all.
     """
-    if when.tzinfo is None:
-        return when.replace(tzinfo=UTC)
-    return when.astimezone(UTC)
+    return when.replace(tzinfo=UTC) if when.tzinfo is None else when.astimezone(UTC)

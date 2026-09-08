@@ -43,15 +43,18 @@ def _require_non_blank(value: object, *, field: str, owner: str) -> str:
     return value
 
 
-def _require_aware(value: datetime | None, *, field: str, owner: str) -> None:
-    """Raise unless ``value`` is ``None`` or a timezone-aware instant."""
-    if value is None:
-        return
-    if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
-        raise ValueError(
-            f"{owner}.{field} must be timezone-aware or None; got a naive datetime. A naive "
-            "instant has no defensible UTC reading (ADR-0016 sibling rule)."
-        )
+def require_aware(value: datetime | None, *, field: str, owner: str) -> None:
+    """Raise unless ``value`` is ``None`` or a timezone-aware instant.
+
+    Package-internal, shared by every value object and both ledgers' ``since`` filter so a naive
+    datetime is refused with one message everywhere.
+
+    Raises:
+        ValueError: If ``value`` is a naive datetime. A naive instant has no defensible UTC
+            reading (ADR-0016 sibling rule).
+    """
+    if value is not None and (value.tzinfo is None or value.tzinfo.utcoffset(value) is None):
+        raise ValueError(f"{owner}.{field} must be timezone-aware; got a naive datetime.")
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,7 +89,7 @@ class EgressTarget:
             ValueError: As documented on the class.
         """
         _require_non_blank(self.name, field="name", owner="EgressTarget")
-        if isinstance(self.remote, bool) is False:
+        if not isinstance(self.remote, bool):
             raise ValueError(f"EgressTarget.remote must be a bool; got {self.remote!r}.")
         if self.max_data_classification is not None and not isinstance(
             self.max_data_classification, DataClassification
@@ -142,7 +145,7 @@ class EgressRequest:
             raise ValueError(
                 f"EgressRequest.target must be an EgressTarget; got {type(self.target).__name__!r}."
             )
-        _require_aware(self.requested_at, field="requested_at", owner="EgressRequest")
+        require_aware(self.requested_at, field="requested_at", owner="EgressRequest")
 
 
 class Verdict(StrEnum):
@@ -212,13 +215,7 @@ class EgressDecision:
         _require_non_blank(self.reason, field="reason", owner="EgressDecision")
         _require_non_blank(self.policy_name, field="policy_name", owner="EgressDecision")
         _require_non_blank(self.policy_version, field="policy_version", owner="EgressDecision")
-        if (
-            self.decided_at.tzinfo is None
-            or self.decided_at.tzinfo.utcoffset(self.decided_at) is None
-        ):
-            raise ValueError(
-                "EgressDecision.decided_at must be timezone-aware; got a naive datetime."
-            )
+        require_aware(self.decided_at, field="decided_at", owner="EgressDecision")
 
     def to_payload(self) -> Any:  # noqa: ANN401 — a GovernanceEgressDecisionOut instance
         """Render this decision as SetSpec's ``governance.egress_decision`` 1.0 payload.
